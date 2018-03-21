@@ -41,6 +41,10 @@ std::string Avoid::transition()
     {
         transition_to = "pickup_state";
     }
+    else if( TagUtilities::hasTag( &inputs->tags, 256 ) && previous_state == "findhome_state" )
+    {
+        transition_to = "dropoff_state";
+    }
     else if( internal_state == AVOID_EXIT_SUCCESS )
         transition_to = previous_state;
     else if( internal_state == AVOID_EXIT_FAILURE )
@@ -94,7 +98,7 @@ ASState Avoid::internalTransition()
                 else
                     transition_to = AVOID_ROTATE;
             }
-            else if( entrance_goal && entrance_goal->hasArrived() )
+            else if( entrance_goal && entrance_goal->hasArrived() || ( inputs->time.toSec() - timer > RESUME_ATTEMPT_TIME ) )
             {
                 transition_to = AVOID_EXIT_SUCCESS;
             }
@@ -170,6 +174,7 @@ void Avoid::forceTransition( ASState transition_to )
             }
             case AVOID_ATTEMPT_EXIT:
                 outputs->current_waypoint = entrance_goal;
+                timer = inputs->time.toSec();
                 break;
         }
     }
