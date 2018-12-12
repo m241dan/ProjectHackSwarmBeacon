@@ -7,6 +7,13 @@ void SimpleWaypoint::run()
     internalAction();
 }
 
+geometry_msgs::Pose2D SimpleWaypoint::getGoalPose()
+{
+    geometry_msgs::Pose2D pose;
+    pose.x = simple_params.goal_x;
+    pose.y = simple_params.goal_y;
+    return pose;
+}
 SWState SimpleWaypoint::internalTransition()
 {
     SWState transition_to = internal_state;

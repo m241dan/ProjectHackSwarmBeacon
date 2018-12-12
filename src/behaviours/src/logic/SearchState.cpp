@@ -114,7 +114,38 @@ void SearchState::onEnter( std::string prev_state )
         this->inputs->goalInObst = false;
     }
     if( waypoints.size() > 0 )
+    {
         outputs->current_waypoint = waypoints.front();
+        if( !inputs->beacon_map.empty() )
+        {
+            geometry_msgs::Pose2D pose = waypoints.front()->getGoalPose();
+            double waypoint_value = hypot( pose.x, pose.y ) * meter_value;
+            double beacon_value = inputs->beacon_heap.front().getWeight();
+
+            if( waypoint_value < beacon_value )
+            {
+                SimpleWaypoint *wp;
+                SimpleParams params;
+
+                params.skid_steer_threshold = M_PI/6;
+                params.linear_max = 40;
+                params.rotational_max = 80;
+                params.skid_max = 60;
+                params.arrived_threshold = 0.05;
+                params.goal_x = inputs->beacon_heap.front().getPosition().x;
+                params.goal_y = inputs->beacon_heap.front().getPosition().y;
+                wp = new SimpleWaypoint( inputs, params );
+                waypoints.insert( waypoints.begin(), dynamic_cast<Waypoint*>( wp ) );
+                inputs->present_beacon = &inputs->beacon_heap.front();
+
+                swarmie_msgs::BeaconUpdate update;
+                update.identifier = inputs->present_beacon->getIdentifier();
+                update.value = 1;
+                outputs->beacon_rover_pub.publish( update );
+            }
+        }
+
+    }
     else
         forceTransition( SEARCHSTATE_INIT );
 }
@@ -122,7 +153,7 @@ void SearchState::onEnter( std::string prev_state )
 void SearchState::onExit( std::string next_state )
 {
     //insert new beacons here
-    if( next_state == "pickup_state" )
+    if( next_state == "pickup_state" && !inputs->present_beacon )
     {
         SimpleWaypoint *wp;
         SimpleParams params;

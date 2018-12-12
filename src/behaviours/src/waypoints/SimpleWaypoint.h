@@ -51,6 +51,7 @@ class SimpleWaypoint : public Waypoint
 
         }
         virtual void run();
+        virtual geometry_msgs::Pose2D getGoalPose();
         SimpleParams simple_params;
     private:
         SWState internalTransition();

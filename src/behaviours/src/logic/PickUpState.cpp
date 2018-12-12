@@ -249,7 +249,7 @@ void PickUpState::forceTransition( PUState transition_to )
             default: break;
             case PICKUP_FINAL_APPROACH:
             {
-                if( inputs->cubes.size() > 1 && inputs->present_beacon != nullptr )
+                if( inputs->cubes.size() > 1 && inputs->present_beacon == nullptr )
                 {
                     swarmie_msgs::Beacon new_beacon;
                     new_beacon.identifier = ( inputs->rover_name + std::to_string(inputs->beacon_counter++) );
@@ -257,6 +257,13 @@ void PickUpState::forceTransition( PUState transition_to )
                     new_beacon.position.x = 0.3 * cos( inputs->odom_accel.theta ) + inputs->odom_accel.x;
                     new_beacon.position.y = 0.3 * sin( inputs->odom_accel.theta ) + inputs->odom_accel.y;
                     outputs->new_beacon_pub.publish( new_beacon );
+                }
+                else if( inputs->cubes.size() > 1 && inputs->present_beacon )
+                {
+                    swarmie_msgs::BeaconUpdate update;
+                    update.identifier = inputs->present_beacon->getIdentifier();
+                    update.value = static_cast<uint16_t>(inputs->cubes.size() -1);
+                    outputs->beacon_cube_pub.publish( update );
                 }
                 break;
             }
@@ -350,6 +357,17 @@ void PickUpState::forceTransition( PUState transition_to )
                 this->rotate = new RotationalWaypoint( this->inputs, r_params );
                 this->outputs->current_waypoint = this->rotate;
 
+                break;
+            }
+            case PICKUP_COMPLETE:
+            {
+                if( inputs->present_beacon )
+                {
+                    swarmie_msgs::BeaconUpdate update;
+                    update.identifier = inputs->present_beacon->getIdentifier();
+                    update.value = -1;
+                    outputs->beacon_rover_pub.publish( update );
+                }
                 break;
             }
         }

@@ -12,6 +12,7 @@ class Waypoint : public StateMachine
         Waypoint( LogicInputs *i );
         bool hasArrived( void );
         std::tuple<int,int> getOutput();
+        virtual geometry_msgs::Pose2D getGoalPose();
     protected:
         void setOutputLeftPWM( int pwm );
         void setOutputRightPWM( int pwm );

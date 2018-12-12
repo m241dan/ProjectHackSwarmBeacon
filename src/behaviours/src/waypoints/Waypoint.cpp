@@ -23,3 +23,9 @@ void Waypoint::setOutputRightPWM( int pwm )
     output_right_pwm = pwm;
 }
 
+geometry_msgs::Pose2D Waypoint::getGoalPose()
+{
+    geometry_msgs::Pose2D pose;
+    return pose;
+}
+
