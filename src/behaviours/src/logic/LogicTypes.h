@@ -8,6 +8,13 @@
 #include "../Gripper.h"
 #include "../TagExaminer.h"
 #include "../Cube.h"
+#include <ros/ros.h>
+#include "../RoverBeacon.h"
+#include "../RoverUtilities.h"
+#include <swarmie_msgs/Beacon.h>
+#include <swarmie_msgs/BeaconUpdate.h>
+#include <vector>
+#include <map>
 
 class Waypoint;
 
@@ -63,6 +70,13 @@ typedef struct logic_inputs
     TagExaminer                 examiner;
     std::vector<roverInfo>	infoVector;
     std::string			rover_name;
+    ros::Subscriber new_beacon_sub;
+    ros::Subscriber beacon_cube_sub;
+    ros::Subscriber beacon_rover_sub;
+    std::map<std::string,int> beacon_map;
+    std::vector<RoverBeacon> beacon_heap;
+    int beacon_counter;
+    RoverBeacon* present_beacon;
 } LogicInputs;
 
 typedef struct logic_outputs
@@ -71,6 +85,10 @@ typedef struct logic_outputs
     Waypoint *current_waypoint = 0;
     double offset_x = 0.;
     double offset_y = 0.;
+    ros::Publisher new_beacon_pub;
+    ros::Publisher beacon_cube_pub;
+    ros::Publisher beacon_rover_pub;
+
 } LogicOutputs;
 
 typedef struct io_table

@@ -228,7 +228,7 @@ LogicMachine logic_machine( &iotable );
     DropOffState dropoff_state( &iotable );
     InitState init_state( &iotable );
 
-void setupLogicMachine()
+void setupLogicMachine( ros::NodeHandle* nh )
 {
     /* add States */
     logic_machine.addState( init_state.getIdentifier(), dynamic_cast<State *>(&init_state) );
@@ -239,6 +239,10 @@ void setupLogicMachine()
     logic_machine.addState( avoid_state.getIdentifier(), dynamic_cast<State *>(&avoid_state) );
     logic_machine.addState( avoidhome_state.getIdentifier(), dynamic_cast<State *>(&avoidhome_state) );
     logic_machine.addState( avoidcube_state.getIdentifier(), dynamic_cast<State *>(&avoidcube_state) );
+    search_state.node_handle = nh;
+    search_state.setupSubscribers();
+    search_state.setupPublishers();
+
     return;
 }
 
@@ -289,7 +293,7 @@ int main(int argc, char **argv)
 
     setupPublishers( ros_handle, published_name );
     setupTimerCallbacks( ros_handle );
-    setupLogicMachine();
+    setupLogicMachine( &ros_handle );
 
     //TBD How to wrap this section up
     std_msgs::String msg;

@@ -1,0 +1,5 @@
+float32 linear_velocity
+float32 rotational_velocity
+float32 skid_threshold
+float32 linear_deceleration_point
+float32 rotational_deceleration_point

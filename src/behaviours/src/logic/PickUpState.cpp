@@ -247,6 +247,19 @@ void PickUpState::forceTransition( PUState transition_to )
         switch( prev_state )
         {
             default: break;
+            case PICKUP_FINAL_APPROACH:
+            {
+                if( inputs->cubes.size() > 1 && inputs->present_beacon != nullptr )
+                {
+                    swarmie_msgs::Beacon new_beacon;
+                    new_beacon.identifier = ( inputs->rover_name + std::to_string(inputs->beacon_counter++) );
+                    new_beacon.num_of_cubes = static_cast<uint16_t>(inputs->cubes.size() -1);
+                    new_beacon.position.x = 0.3 * cos( inputs->odom_accel.theta ) + inputs->odom_accel.x;
+                    new_beacon.position.y = 0.3 * sin( inputs->odom_accel.theta ) + inputs->odom_accel.y;
+                    outputs->new_beacon_pub.publish( new_beacon );
+                }
+                break;
+            }
         }
 
         /* onEnter bits */

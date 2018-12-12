@@ -55,6 +55,8 @@ add_executable(
   src/logic/DropOffState.cpp
   src/logic/Avoid.cpp
   src/TagExaminer.cpp
+        src/RoverBeacon.cpp
+        src/RoverUtilities.cpp
 )
 
 add_dependencies(behaviours ${catkin_EXPORTED_TARGETS})

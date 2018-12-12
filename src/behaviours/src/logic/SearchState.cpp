@@ -5,6 +5,79 @@
 
 std::tuple<int,int> coord_key[4] = { std::make_tuple( -1, 1 ), std::make_tuple( 1, 1 ), std::make_tuple( 1, -1 ), std::make_tuple( -1, -1 ) };
 
+void SearchState::setupPublishers()
+{
+    outputs->new_beacon_pub      = node_handle->advertise<swarmie_msgs::Beacon>( "new_beacon", 10, true );
+    outputs->beacon_rover_pub    = node_handle->advertise<swarmie_msgs::BeaconUpdate>( "rover_interested_update", 10, true );
+    outputs->beacon_cube_pub     = node_handle->advertise<swarmie_msgs::BeaconUpdate>( "cubes_seen_update", 10, true );
+}
+
+void SearchState::setupSubscribers()
+{
+    inputs->new_beacon_sub      = node_handle->subscribe( "new_beacon", 10, &SearchState::newBeaconHandler, this );
+    inputs->beacon_rover_sub    = node_handle->subscribe( "rover_interested_update", 10, &SearchState::roverInterestedHandler, this );
+    inputs->beacon_cube_sub     = node_handle->subscribe( "cubes_seen_update", 10, &SearchState::cubesSeenHandler, this );
+}
+
+void SearchState::newBeaconHandler( const swarmie_msgs::Beacon::ConstPtr &beacon )
+{
+    if( inputs->beacon_map.find( beacon->identifier ) == inputs->beacon_map.end() )
+    {
+        inputs->beacon_heap.emplace_back( *beacon, dummy );
+        std::push_heap( inputs->beacon_heap.begin(), inputs->beacon_heap.end() );
+
+        uint32_t index = UINT32_MAX;
+        for( uint32_t x = 0; x < inputs->beacon_heap.size(); x++ )
+        {
+            if( inputs->beacon_heap[x].getIdentifier() == beacon->identifier )
+                index = x;
+        }
+
+        if( index != UINT32_MAX )
+            inputs->beacon_map.insert( std::pair<std::string,uint32_t>( beacon->identifier, index ) );
+    }
+    else
+    {
+        ROS_INFO( "newBeaconHandler: attempting to add beacon with identifier %s but it already exists!", beacon->identifier.c_str() );
+    }
+}
+
+void SearchState::roverInterestedHandler( const swarmie_msgs::BeaconUpdate::ConstPtr &message )
+{
+    if( inputs->beacon_map.find( message->identifier ) != inputs->beacon_map.end() )
+    {
+        if( message->value > 0 )
+            inputs->beacon_heap[inputs->beacon_map[message->identifier]].addRoverInterested();
+        else
+            inputs->beacon_heap[inputs->beacon_map[message->identifier]].remRoverInterested();
+
+        std::make_heap( inputs->beacon_heap.begin(), inputs->beacon_heap.end() );
+
+        for( uint32_t x = 0; x < inputs->beacon_heap.size(); x++ )
+            inputs->beacon_map[inputs->beacon_heap[x].getIdentifier()] = x;
+    }
+    else
+    {
+        ROS_INFO( "roverInterestedHandler: attempting to update a beacon with identifier %s that does not exist", message->identifier.c_str() );
+    }
+}
+
+void SearchState::cubesSeenHandler( const swarmie_msgs::BeaconUpdate::ConstPtr &message )
+{
+    if( inputs->beacon_map.find( message->identifier ) != inputs->beacon_map.end() )
+    {
+        inputs->beacon_heap[inputs->beacon_map[message->identifier]].setCubes( static_cast<uint16_t>(message->value) );
+        std::make_heap( inputs->beacon_heap.begin(), inputs->beacon_heap.end() );
+
+        for( uint32_t x = 0; x < inputs->beacon_heap.size(); x++ )
+            inputs->beacon_map[inputs->beacon_heap[x].getIdentifier()] = x;
+    }
+    else
+    {
+        ROS_INFO( "cubeSeenHandler: attempting to update a beacon with identifier %s that does not exist", message->identifier.c_str() );
+    }
+}
+
 void SearchState::action()
 {
     forceTransition( internalTransition() );
@@ -48,6 +121,7 @@ void SearchState::onEnter( std::string prev_state )
 
 void SearchState::onExit( std::string next_state )
 {
+    //insert new beacons here
     if( next_state == "pickup_state" )
     {
         SimpleWaypoint *wp;
