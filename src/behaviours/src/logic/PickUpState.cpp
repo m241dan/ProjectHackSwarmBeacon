@@ -254,8 +254,8 @@ void PickUpState::forceTransition( PUState transition_to )
                     swarmie_msgs::Beacon new_beacon;
                     new_beacon.identifier = ( inputs->rover_name + std::to_string(inputs->beacon_counter++) );
                     new_beacon.num_of_cubes = static_cast<uint16_t>(inputs->cubes.size() -1);
-                    new_beacon.position.x = 0.3 * cos( inputs->odom_accel.theta ) + inputs->odom_accel.x;
-                    new_beacon.position.y = 0.3 * sin( inputs->odom_accel.theta ) + inputs->odom_accel.y;
+                    new_beacon.position.x = 0.1 * cos( inputs->odom_accel.theta ) + inputs->odom_accel.x + outputs->offset_x;
+                    new_beacon.position.y = 0.1 * sin( inputs->odom_accel.theta ) + inputs->odom_accel.y + outputs->offset_y;
                     outputs->new_beacon_pub.publish( new_beacon );
                 }
                 else if( inputs->cubes.size() > 1 && inputs->present_beacon )
