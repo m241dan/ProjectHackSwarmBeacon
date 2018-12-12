@@ -39,7 +39,19 @@ std::string Avoid::transition()
 
     if( TagUtilities::hasTag( &inputs->tags, 0 ) && previous_state == "search_state" )
     {
-        transition_to = "pickup_state";
+        if( !TagUtilities::hasTag( &this->inputs->tags, 256 ) )
+        {
+            transition_to = "pickup_state";
+        }
+        else
+        {
+            Tag closest_tag = TagUtilities::getClosestTag( &this->inputs->tags, 256 );
+            Cube closest_cube = TagUtilities::getClosestCube( &this->inputs->cubes );
+
+            if( closest_tag.getGroundDistance( 256 ) > closest_cube.getGroundDistance() )
+                transition_to = "pickup_state";
+        }
+
     }
     else if( TagUtilities::hasTag( &inputs->tags, 256 ) && previous_state == "findhome_state" )
     {
