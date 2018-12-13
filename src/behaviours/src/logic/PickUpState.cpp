@@ -206,6 +206,8 @@ void PickUpState::internalAction()
             outputs->gripper_position = Gripper::DOWN_OPEN;
             if( inputs->cubes.size() > cubes_seen )
                 cubes_seen = (int)inputs->cubes.size();
+            if( TagUtilities::hasTag( &this->inputs->tags, 256 ) )
+                home_seen = true;
             break;
         case PICKUP_CLAW_CLOSE:
             outputs->gripper_position = Gripper::DOWN_CLOSED;
@@ -262,6 +264,7 @@ void PickUpState::forceTransition( PUState transition_to )
             case PICKUP_FINAL_APPROACH:
             {
                 cubes_seen = 0;
+                home_seen = false;
                 if( this->linear )
                 {
                     delete this->linear;
@@ -357,7 +360,7 @@ void PickUpState::forceTransition( PUState transition_to )
 
                     double x = inputs->odom_accel.x - inputs->present_beacon.getPosition().x;
                     double y = inputs->odom_accel.y - inputs->present_beacon.getPosition().y;
-                    if( hypot( x, y ) > 1.0 )
+                    if( hypot( x, y ) > 1.0 && cubes_seen > 1 && !home_seen)
                     {
                         swarmie_msgs::Beacon new_beacon;
                         new_beacon.identifier = ( inputs->rover_name + std::to_string(inputs->beacon_counter++) );
@@ -371,7 +374,7 @@ void PickUpState::forceTransition( PUState transition_to )
                         outputs->beacon_cube_pub.publish( update );
                     }
                 }
-                else if( cubes_seen > 1 )
+                else if( cubes_seen > 1 && !home_seen )
                 {
                     swarmie_msgs::Beacon new_beacon;
                     new_beacon.identifier = ( inputs->rover_name + std::to_string(inputs->beacon_counter++) );

@@ -62,6 +62,7 @@ class PickUpState : public State
 
         int cubes_seen;
         geometry_msgs::Pose2D confirm_position;
+        bool home_seen;
 };
 
 #endif
