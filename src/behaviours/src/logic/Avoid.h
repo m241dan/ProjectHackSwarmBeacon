@@ -10,7 +10,7 @@
 
 #define MAX_EXIT_ATTEMPTS 7
 #define RESUME_ATTEMPT_TIME 30
-#define ROTATION_SPEED 65
+#define AVOID_ROTATION_SPEED 65
 
 typedef enum
 {

@@ -73,10 +73,13 @@ typedef struct logic_inputs
     ros::Subscriber new_beacon_sub;
     ros::Subscriber beacon_cube_sub;
     ros::Subscriber beacon_rover_sub;
-    std::map<std::string,int> beacon_map;
-    std::vector<RoverBeacon> beacon_heap;
+    BeaconUtilities::BeaconMap beacon_map;
+    BeaconUtilities::BeaconHeap beacon_heap;
     int beacon_counter;
-    RoverBeacon* present_beacon;
+    RoverBeacon present_beacon;
+    logic_inputs() : present_beacon( "dummy", raw_odom, raw_odom )
+    {
+    }
 } LogicInputs;
 
 typedef struct logic_outputs

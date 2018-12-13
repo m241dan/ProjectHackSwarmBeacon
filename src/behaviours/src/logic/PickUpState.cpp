@@ -204,6 +204,8 @@ void PickUpState::internalAction()
             break;
         case PICKUP_FINAL_APPROACH:
             outputs->gripper_position = Gripper::DOWN_OPEN;
+            if( inputs->cubes.size() > cubes_seen )
+                cubes_seen = (int)inputs->cubes.size();
             break;
         case PICKUP_CLAW_CLOSE:
             outputs->gripper_position = Gripper::DOWN_CLOSED;
@@ -247,34 +249,19 @@ void PickUpState::forceTransition( PUState transition_to )
         switch( prev_state )
         {
             default: break;
-            case PICKUP_FINAL_APPROACH:
-            {
-                if( inputs->cubes.size() > 1 && inputs->present_beacon == nullptr )
-                {
-                    swarmie_msgs::Beacon new_beacon;
-                    new_beacon.identifier = ( inputs->rover_name + std::to_string(inputs->beacon_counter++) );
-                    new_beacon.num_of_cubes = static_cast<uint16_t>(inputs->cubes.size() -1);
-                    new_beacon.position.x = inputs->odom_accel.x + outputs->offset_x;
-                    new_beacon.position.y = inputs->odom_accel.y + outputs->offset_y;
-                    outputs->new_beacon_pub.publish( new_beacon );
-                }
-                else if( inputs->cubes.size() > 1 && inputs->present_beacon )
-                {
-                    swarmie_msgs::BeaconUpdate update;
-                    update.identifier = inputs->present_beacon->getIdentifier();
-                    update.value = static_cast<uint16_t>(inputs->cubes.size() -1);
-                    outputs->beacon_cube_pub.publish( update );
-                }
-                break;
-            }
         }
 
         /* onEnter bits */
         switch( internal_state )
         {
             default: break;
+            case PICKUP_CONFIRM:
+                confirm_position.x = inputs->odom_accel.x;
+                confirm_position.y = inputs->odom_accel.y;
+                break;
             case PICKUP_FINAL_APPROACH:
             {
+                cubes_seen = 0;
                 if( this->linear )
                 {
                     delete this->linear;
@@ -361,12 +348,36 @@ void PickUpState::forceTransition( PUState transition_to )
             }
             case PICKUP_COMPLETE:
             {
-                if( inputs->present_beacon )
+                if( inputs->present_beacon.getIdentifier() != "dummy" )
                 {
                     swarmie_msgs::BeaconUpdate update;
-                    update.identifier = inputs->present_beacon->getIdentifier();
+                    update.identifier = inputs->present_beacon.getIdentifier();
                     update.value = -1;
                     outputs->beacon_rover_pub.publish( update );
+
+                    double x = inputs->odom_accel.x - inputs->present_beacon.getPosition().x;
+                    double y = inputs->odom_accel.y - inputs->present_beacon.getPosition().y;
+                    if( hypot( x, y ) > 1.0 )
+                    {
+                        swarmie_msgs::Beacon new_beacon;
+                        new_beacon.identifier = ( inputs->rover_name + std::to_string(inputs->beacon_counter++) );
+                        new_beacon.num_of_cubes = static_cast<uint16_t>(cubes_seen -1);
+                        new_beacon.position = confirm_position;
+                        outputs->new_beacon_pub.publish( new_beacon );
+                    }
+                    else
+                    {
+                        update.value = static_cast<uint16_t>(cubes_seen - 1);
+                        outputs->beacon_cube_pub.publish( update );
+                    }
+                }
+                else if( cubes_seen > 1 )
+                {
+                    swarmie_msgs::Beacon new_beacon;
+                    new_beacon.identifier = ( inputs->rover_name + std::to_string(inputs->beacon_counter++) );
+                    new_beacon.num_of_cubes = static_cast<uint16_t>(cubes_seen -1);
+                    new_beacon.position = confirm_position;
+                    outputs->new_beacon_pub.publish( new_beacon );
                 }
                 break;
             }

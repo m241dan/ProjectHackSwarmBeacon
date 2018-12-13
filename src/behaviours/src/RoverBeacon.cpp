@@ -3,7 +3,7 @@
 //
 
 #include "RoverBeacon.h"
-
+#include <ros/ros.h>
 RoverBeacon::RoverBeacon( std::string id, geometry_msgs::Pose2D pos, geometry_msgs::Pose2D &rp ) :
         identifier( std::move( id )), beacon_position( pos ),
         rover_position( rp )
@@ -83,6 +83,11 @@ void RoverBeacon::updateBeacon( const swarmie_msgs::BeaconConstPtr &beacon )
     }
 }
 
+uint16_t RoverBeacon::getCubes()
+{
+    return num_of_cubes;
+}
+
 void RoverBeacon::setCubes( uint16_t cubes )
 {
     num_of_cubes = cubes;
@@ -150,11 +155,18 @@ void BeaconUtilities::heapPush( BeaconUtilities::BeaconHeap &heap, BeaconUtiliti
     heap.push_back( beacon );
 
     uint64_t i = heap.size() - 1;
-    map.insert( std::pair<std::string,uint64_t>( beacon.getIdentifier(), i ) );
-    while( i > 0 and ( heap[(i-1)/2].getWeight() > heap[i].getWeight() ) )
+    map.insert( std::pair<std::string, uint64_t>( beacon.getIdentifier(), i ));
+    if( heap.size() > 1 )
     {
-        heapSwap( heap, map, heap[(i-1)/2].getIdentifier(), heap[i].getIdentifier() );
+        ROS_INFO( "(i-1)/2: %d", heap[std::floor((i - 1) / 2)].getWeight());
+        ROS_INFO( "i      : %d", heap[i].getWeight());
+    }
+
+    while( i > 0 and ( heap[std::floor((i-1)/2)].getWeight() < heap[i].getWeight() ) )
+    {
+        heapSwap( heap, map, heap[std::floor((i-1)/2)].getIdentifier(), heap[i].getIdentifier() );
         i = static_cast<uint64_t>(std::floor((i-1)/2));
+        ROS_INFO( "calling swap..." );
     }
 
 }
@@ -164,7 +176,7 @@ void BeaconUtilities::heapWeightUp( BeaconUtilities::BeaconHeap &heap, BeaconUti
 {
     uint64_t i = map[beacon_identifier];
 
-    while( i > 0 and ( heap[(i-1)/2].getWeight() > heap[i].getWeight() ) )
+    while( i > 0 and ( heap[(i-1)/2].getWeight() < heap[i].getWeight() ) )
     {
         heapSwap( heap, map, heap[(i-1)/2].getIdentifier(), heap[i].getIdentifier() );
         i = static_cast<uint64_t>(std::floor((i-1)/2));
@@ -200,7 +212,8 @@ void BeaconUtilities::heapSwap( BeaconUtilities::BeaconHeap &heap, BeaconUtiliti
     uint64_t one_index = map[beacon_one];
     uint64_t two_index = map[beacon_two];
 
-    std::iter_swap( heap.begin()+one_index, heap.end()+two_index );
+    ROS_INFO( "I1: %d I2: %d", (int)one_index, (int)two_index );
+    std::iter_swap( heap.begin()+one_index, heap.begin()+two_index );
 
     map[beacon_one] = two_index;
     map[beacon_two] = one_index;

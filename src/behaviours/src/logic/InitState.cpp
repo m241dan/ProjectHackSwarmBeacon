@@ -99,8 +99,10 @@ void InitState::internalAction()
                     dist = sqrt( ( z * z ) - ( 0.195 * 0.195 ) ) + DISTANCE_TO_CENTER;
 
                 /* in sim */
-                outputs->offset_x = dist * cos( inputs->odom_accel.theta ) + inputs->odom_accel.x;
-                outputs->offset_y = dist * sin( inputs->odom_accel.theta ) + inputs->odom_accel.y;
+              //  outputs->offset_x = dist * cos( inputs->odom_accel.theta ) + inputs->odom_accel.x;
+              //  outputs->offset_y = dist * sin( inputs->odom_accel.theta ) + inputs->odom_accel.y;
+                outputs->offset_x = inputs->raw_odom.x;
+                outputs->offset_y = inputs->raw_odom.y;
                 /* irl */
 //                outputs->offset_x = dist * cos( inputs->odom_accel_gps.theta ) + inputs->odom_accel_gps.x;
 //                outputs->offset_y = dist * sin( inputs->odom_accel_gps.theta ) + inputs->odom_accel_gps.y;

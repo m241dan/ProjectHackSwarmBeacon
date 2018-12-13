@@ -59,6 +59,9 @@ class PickUpState : public State
         int attempts;
         int num_tries;
         bool cube_secured;
+
+        int cubes_seen;
+        geometry_msgs::Pose2D confirm_position;
 };
 
 #endif

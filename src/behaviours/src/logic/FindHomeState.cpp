@@ -141,22 +141,21 @@ void FindHomeState::internalAction()
         }
         case FINDHOME_GOHOME:
         case FINDHOME_LOST:
-            /* both states should cycle through the waypoints */
-            if( waypoints.size() > 0 )
-            {
-                Waypoint *waypoint = waypoints.front();
-                if( waypoint && waypoint->hasArrived() )
-                {
-                    delete waypoint;
-                    this->waypoints.erase( this->waypoints.begin() );
-                    if( this->waypoints.size() > 0 )
-                        this->outputs->current_waypoint = waypoints.front();
-                    else
-                        this->outputs->current_waypoint = 0;
-                }
-                break;
-            }
+        {
+            SimpleWaypoint *waypoint;
+            SimpleParams params;
+
+            params.skid_steer_threshold = M_PI / 6;
+            params.arrived_threshold = 0.05;
+
+            params.goal_x = 0.0;
+            params.goal_y = 0.0;
+
+            waypoint = new SimpleWaypoint( this->inputs, params );
+            this->waypoints.push_back( dynamic_cast<Waypoint *>( waypoint ));
+            this->outputs->current_waypoint = waypoints.front();
             break;
+        }
         case FINDHOME_COMPLETE:
             break;
         case FINDHOME_RESET:

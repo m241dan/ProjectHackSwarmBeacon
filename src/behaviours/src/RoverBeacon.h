@@ -31,6 +31,7 @@ class RoverBeacon
         void                        addRoverInterested();
         void                        remRoverInterested();
         void                        updateBeacon( const swarmie_msgs::BeaconConstPtr& beacon );
+        uint16_t                    getCubes();
         void                        setCubes( uint16_t cubes );
         void                        remCube();
         bool                        isTemporary();

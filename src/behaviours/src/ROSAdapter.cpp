@@ -277,6 +277,7 @@ int main(int argc, char **argv)
     ros::init(argc, argv, (published_name + "_BEHAVIOUR"), ros::init_options::NoSigintHandler);
     ros::NodeHandle ros_handle;
 
+    iotable.inputs->rover_name = published_name;
     // Register the SIGINT event handler so the node can shutdown properly
     signal(SIGINT, sigintEventHandler);
 

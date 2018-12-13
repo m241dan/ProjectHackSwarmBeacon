@@ -132,8 +132,8 @@ void Avoid::internalAction()
         {
             RawOutputParams r_params;
 
-            r_params.left_output = -ROTATION_SPEED;
-            r_params.right_output = ROTATION_SPEED;
+            r_params.left_output = -AVOID_ROTATION_SPEED;
+            r_params.right_output = AVOID_ROTATION_SPEED;
 
             rotate = new RawOutputWaypoint( inputs, r_params );
             outputs->current_waypoint = rotate;
