@@ -556,7 +556,7 @@ void sonarHandler(const sensor_msgs::Range::ConstPtr& sonar_left, const sensor_m
 void odomHandler(const nav_msgs::Odometry::ConstPtr& message)
 {
     inputs.raw_odom.x = message->pose.pose.position.x;
-    inputs.raw_odom.y = message->pose.pose.position.x;
+    inputs.raw_odom.y = message->pose.pose.position.y;
     inputs.odom_accel.x = message->pose.pose.position.x;
     inputs.odom_accel.y = message->pose.pose.position.y;
 }
