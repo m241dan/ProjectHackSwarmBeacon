@@ -44,16 +44,19 @@ int32_t RoverBeacon::getWeight() const
     //handle the intrinsic weight of the beacon
     int32_t beacon_weight = weight;
 
-    //distance portion
-    beacon_weight += ( arena_size * meter_value );
-    beacon_weight -= static_cast<uint16_t>( static_cast<double>( meter_value ) * hypot( beacon_position.x, beacon_position.y ) ); // RoverUtilities::Math::distance( rover_position, beacon_position ) );
+    if( num_of_cubes != 0 )
+    {
+        //distance portion
+        beacon_weight += (arena_size * meter_value);
+        beacon_weight -= static_cast<uint16_t>( static_cast<double>( meter_value ) * hypot( beacon_position.x,
+                                                                                            beacon_position.y )); // RoverUtilities::Math::distance( rover_position, beacon_position ) );
 
-    //cube portion
-    beacon_weight += num_of_cubes * cube_value;
+        //cube portion
+        beacon_weight += num_of_cubes * cube_value;
 
-    //rover portion
-    beacon_weight -= num_of_rovers_interested * rover_value;
-
+        //rover portion
+        beacon_weight -= num_of_rovers_interested * rover_value;
+    }
     return beacon_weight;
 }
 

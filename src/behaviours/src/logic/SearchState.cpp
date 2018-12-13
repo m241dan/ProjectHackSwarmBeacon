@@ -40,12 +40,14 @@ void SearchState::roverInterestedHandler( const swarmie_msgs::BeaconUpdate::Cons
         if( message->value > 0 )
         {
             inputs->beacon_heap[inputs->beacon_map[message->identifier]].addRoverInterested();
-            BeaconUtilities::heapWeightDown( inputs->beacon_heap, inputs->beacon_map, message->identifier );
+            if( inputs->beacon_heap.size() > 1 )
+                BeaconUtilities::heapWeightDown( inputs->beacon_heap, inputs->beacon_map, message->identifier );
         }
         else
         {
             inputs->beacon_heap[inputs->beacon_map[message->identifier]].remRoverInterested();
-            BeaconUtilities::heapWeightUp( inputs->beacon_heap, inputs->beacon_map, message->identifier );
+            if( inputs->beacon_heap.size() > 1 )
+              BeaconUtilities::heapWeightUp( inputs->beacon_heap, inputs->beacon_map, message->identifier );
 
         }
     }
