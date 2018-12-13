@@ -115,13 +115,14 @@ void SearchState::onEnter( std::string prev_state )
     }
     if( waypoints.size() > 0 )
     {
-        outputs->current_waypoint = waypoints.front();
+       // outputs->current_waypoint = waypoints.front();
         if( !inputs->beacon_map.empty() )
         {
             geometry_msgs::Pose2D pose = waypoints.front()->getGoalPose();
-            double waypoint_value = hypot( pose.x, pose.y ) * meter_value;
+            double waypoint_value = ( arena_size - hypot( pose.x, pose.y ) ) * meter_value;
             double beacon_value = inputs->beacon_heap.front().getWeight();
 
+            ROS_INFO( "R: %s WV: %f BV %f", inputs->rover_name.c_str(), waypoint_value, beacon_value );
             if( waypoint_value < beacon_value )
             {
                 SimpleWaypoint *wp;
@@ -144,6 +145,7 @@ void SearchState::onEnter( std::string prev_state )
                 outputs->beacon_rover_pub.publish( update );
             }
         }
+        outputs->current_waypoint = waypoints.front();
 
     }
     else

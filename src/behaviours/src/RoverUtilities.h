@@ -9,6 +9,10 @@
 #include <geometry_msgs/Pose.h>
 #include <angles/angles.h>
 #include <math.h>
+#include <vector>
+#include <map>
+#include "RoverBeacon.h"
+#include <algorithm>
 
 namespace RoverUtilities
 {
@@ -21,6 +25,7 @@ namespace RoverUtilities
         double  getCorrectionBetweenRoverAndPoint   ( const geometry_msgs::Pose2D& rover, const geometry_msgs::Pose2D& point );
         bool    closerPose                          ( const geometry_msgs::Pose& p1, const geometry_msgs::Pose& p2 );
     };
+
 };
 
 #endif //BEHAVIOURS_ROVERUTILITIES_H

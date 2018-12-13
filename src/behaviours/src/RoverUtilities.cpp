@@ -51,3 +51,4 @@ bool RoverUtilities::Math::closerPose( const geometry_msgs::Pose &p1, const geom
 {
     return distance( p1 ) < distance( p2 );
 }
+

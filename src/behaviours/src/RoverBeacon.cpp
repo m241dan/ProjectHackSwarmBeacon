@@ -28,16 +28,16 @@ RoverBeacon::RoverBeacon( const swarmie_msgs::Beacon &beacon, geometry_msgs::Pos
 }
 
 
-RoverBeacon::RoverBeacon( RoverBeacon &&o ) noexcept : identifier( std::move(o.identifier) ),
-                                                       beacon_position( o.beacon_position ),
-                                                       rover_position( o.rover_position ),
-                                                       num_of_cubes( o.num_of_cubes ),
-                                                       num_of_rovers_interested( o.num_of_rovers_interested ),
-                                                       weight( o.weight ),
-                                                       temporary( o.temporary )
-{
-
-}
+//RoverBeacon::RoverBeacon( RoverBeacon &&o ) noexcept : identifier( std::move(o.identifier) ),
+//                                                       beacon_position( o.beacon_position ),
+//                                                       rover_position( o.rover_position ),
+//                                                       num_of_cubes( o.num_of_cubes ),
+//                                                       num_of_rovers_interested( o.num_of_rovers_interested ),
+//                                                       weight( o.weight ),
+//                                                       temporary( o.temporary )
+//{
+//
+//}
 
 int32_t RoverBeacon::getWeight() const
 {
@@ -104,17 +104,29 @@ bool RoverBeacon::operator<( const RoverBeacon &beacon )
     return this->getWeight() < beacon.getWeight();
 }
 
-RoverBeacon& RoverBeacon::operator=( RoverBeacon&& other ) noexcept
-{
-    identifier = std::move(other.identifier);
-    beacon_position = other.beacon_position;
-    rover_position = other.rover_position;
-    num_of_cubes = other.num_of_cubes;
-    num_of_rovers_interested = other.num_of_rovers_interested;
-    weight = other.weight;
-    temporary = other.temporary;
-    return *this;
-}
+//RoverBeacon& RoverBeacon::operator=( const RoverBeacon& other )
+//{
+//    identifier = other.identifier;
+//    beacon_position = other.beacon_position;
+//    rover_position = other.rover_position;
+//    num_of_cubes = other.num_of_cubes;
+//    num_of_rovers_interested = other.num_of_rovers_interested;
+//    weight = other.weight;
+//    temporary = other.temporary;
+//    return *this;
+//}
+//
+//RoverBeacon& RoverBeacon::operator=( RoverBeacon&& other ) noexcept
+//{
+//    identifier = std::move(other.identifier);
+//    beacon_position = other.beacon_position;
+//    rover_position = other.rover_position;
+//    num_of_cubes = other.num_of_cubes;
+//    num_of_rovers_interested = other.num_of_rovers_interested;
+//    weight = other.weight;
+//    temporary = other.temporary;
+//    return *this;
+//}
 
 std::string RoverBeacon::getIdentifier()
 {
@@ -131,4 +143,85 @@ swarmie_msgs::Beacon RoverBeacon::toMessage()
     msg.weight = weight;
     msg.position = beacon_position;
     return msg;
+}
+
+void BeaconUtilities::heapPush( BeaconUtilities::BeaconHeap &heap, BeaconUtilities::BeaconMap &map, RoverBeacon beacon )
+{
+    heap.push_back( beacon );
+
+    uint64_t i = heap.size() - 1;
+    map.insert( std::pair<std::string,uint64_t>( beacon.getIdentifier(), i ) );
+    while( i > 0 and ( heap[(i-1)/2].getWeight() > heap[i].getWeight() ) )
+    {
+        heapSwap( heap, map, heap[(i-1)/2].getIdentifier(), heap[i].getIdentifier() );
+        i = static_cast<uint64_t>(std::floor((i-1)/2));
+    }
+
+}
+
+void BeaconUtilities::heapWeightUp( BeaconUtilities::BeaconHeap &heap, BeaconUtilities::BeaconMap &map,
+                                   std::string beacon_identifier )
+{
+    uint64_t i = map[beacon_identifier];
+
+    while( i > 0 and ( heap[(i-1)/2].getWeight() > heap[i].getWeight() ) )
+    {
+        heapSwap( heap, map, heap[(i-1)/2].getIdentifier(), heap[i].getIdentifier() );
+        i = static_cast<uint64_t>(std::floor((i-1)/2));
+    }
+
+}
+
+//essentially a max_heapify
+void BeaconUtilities::heapWeightDown( BeaconUtilities::BeaconHeap &heap, BeaconUtilities::BeaconMap &map,
+                                     std::string beacon_identifier )
+{
+    uint64_t i = map[beacon_identifier];
+    uint64_t left = 2*i + 1;
+    uint64_t right = 2*i + 2;
+    uint64_t largest = i;
+
+    if( left <= heap.size() and heap[left].getWeight() > heap[largest].getWeight() )
+        largest = left;
+
+    if( right <= heap.size() and heap[right].getWeight() > heap[largest].getWeight() )
+        largest = right;
+
+    if( largest != i )
+    {
+        heapSwap( heap, map, heap[i].getIdentifier(), heap[largest].getIdentifier() );
+        heapWeightDown( heap, map, heap[largest].getIdentifier() );
+    }
+}
+
+void BeaconUtilities::heapSwap( BeaconUtilities::BeaconHeap &heap, BeaconUtilities::BeaconMap &map, std::string beacon_one,
+                               std::string beacon_two )
+{
+    uint64_t one_index = map[beacon_one];
+    uint64_t two_index = map[beacon_two];
+
+    std::iter_swap( heap.begin()+one_index, heap.end()+two_index );
+
+    map[beacon_one] = two_index;
+    map[beacon_two] = one_index;
+}
+
+void BeaconUtilities::heapPop( BeaconUtilities::BeaconHeap &heap, BeaconUtilities::BeaconMap &map )
+{
+    if( !heap.empty() )
+    {
+        if( heap.size() == 1 )
+        {
+            heap.clear();
+            map.clear();
+        }
+        else
+        {
+            std::string top_identifier = heap[0].getIdentifier();
+            heapSwap( heap, map, heap[0].getIdentifier(), (*heap.end()).getIdentifier() );
+            map.erase( top_identifier );
+            heap.erase( heap.begin()+(heap.size()-1) );
+            heapWeightDown( heap, map, heap[0].getIdentifier() );
+        }
+    }
 }
