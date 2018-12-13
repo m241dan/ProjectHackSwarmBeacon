@@ -556,13 +556,15 @@ void sonarHandler(const sensor_msgs::Range::ConstPtr& sonar_left, const sensor_m
 void odomHandler(const nav_msgs::Odometry::ConstPtr& message)
 {
     inputs.raw_odom.x = message->pose.pose.position.x;
-    inputs.raw_odom.y = message->pose.pose.position.y;
+    inputs.raw_odom.y = message->pose.pose.position.x;
+    inputs.odom_accel.x = message->pose.pose.position.x;
+    inputs.odom_accel.y = message->pose.pose.position.y;
 }
 void odomAndAccelHandler(const nav_msgs::Odometry::ConstPtr& message)
 {
     //Get (x,y) location directly from pose
-    inputs.odom_accel.x = message->pose.pose.position.x - outputs.offset_x;
-    inputs.odom_accel.y = message->pose.pose.position.y - outputs.offset_y;
+  //  inputs.odom_accel.x = message->pose.pose.position.x - outputs.offset_x;
+  //  inputs.odom_accel.y = message->pose.pose.position.y - outputs.offset_y;
 
     //Get theta rotation by converting quaternion orientation to pitch/roll/yaw
     tf::Quaternion q(message->pose.pose.orientation.x, message->pose.pose.orientation.y, message->pose.pose.orientation.z, message->pose.pose.orientation.w);
