@@ -76,8 +76,9 @@ typedef struct logic_inputs
     BeaconUtilities::BeaconMap beacon_map;
     BeaconUtilities::BeaconHeap beacon_heap;
     int beacon_counter;
+    RoverBeacon dummy;
     RoverBeacon present_beacon;
-    logic_inputs() : present_beacon( "dummy", raw_odom, raw_odom )
+    logic_inputs() : present_beacon( "dummy", raw_odom, raw_odom ), dummy( "dummy", raw_odom, raw_odom )
     {
     }
 } LogicInputs;

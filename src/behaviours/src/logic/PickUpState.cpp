@@ -357,6 +357,7 @@ void PickUpState::forceTransition( PUState transition_to )
                     update.identifier = inputs->present_beacon.getIdentifier();
                     update.value = -1;
                     outputs->beacon_rover_pub.publish( update );
+                    inputs->present_beacon = inputs->dummy;
 
                     double x = inputs->odom_accel.x - inputs->present_beacon.getPosition().x;
                     double y = inputs->odom_accel.y - inputs->present_beacon.getPosition().y;
